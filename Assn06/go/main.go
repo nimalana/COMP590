@@ -95,12 +95,14 @@ func randDuration(minMs, maxMs int) time.Duration {
 // State: id, arrivalMs (goroutine-local variables).
 //
 // Message flow:
-//   out: MsgArrive          → WaitingRoom  (with own mailbox as From)
-//   in:  MsgAdmitted        ← WaitingRoom
-//    or  MsgTurnedAway      ← WaitingRoom
-//   in:  MsgHaircutStarting ← Barber       (records wait time)
-//   in:  MsgRateRequest     ← Barber       (From = ratingCh)
-//   out: MsgRating          → ratingCh
+//
+//	out: MsgArrive          → WaitingRoom  (with own mailbox as From)
+//	in:  MsgAdmitted        ← WaitingRoom
+//	 or  MsgTurnedAway      ← WaitingRoom
+//	in:  MsgHaircutStarting ← Barber       (records wait time)
+//	in:  MsgRateRequest     ← Barber       (From = ratingCh)
+//	out: MsgRating          → ratingCh
+//
 // ---------------------------------------------------------------------------
 func runCustomer(id int, arrivalMs int64, waitingRoom chan Message) {
 	name := fmt.Sprintf("Customer-%d", id)
@@ -157,9 +159,11 @@ func computeRating(waitSecs float64) int {
 // State: queue, turnedAway, barberSleeping, barberTrafficCh (all goroutine-local).
 //
 // Sleeping/waking handshake:
-//   barberSleeping = true  when MsgNoneWaiting is sent.
-//   barberSleeping = false when MsgWakeUp is sent.
-//   Wakeup is sent exactly once per sleep cycle.
+//
+//	barberSleeping = true  when MsgNoneWaiting is sent.
+//	barberSleeping = false when MsgWakeUp is sent.
+//	Wakeup is sent exactly once per sleep cycle.
+//
 // ---------------------------------------------------------------------------
 type queueEntry struct {
 	ch         chan Message
@@ -233,8 +237,9 @@ func runWaitingRoom(mailbox chan Message) {
 // State: cuts, avgDurMs, avgRating (goroutine-local variables).
 //
 // Two input channels:
-//   trafficCh  — WaitingRoom messages: customer_ready, none_waiting, wakeup
-//   controlCh  — ShopOwner messages:   get_stats, shutdown
+//
+//	trafficCh  — WaitingRoom messages: customer_ready, none_waiting, wakeup
+//	controlCh  — ShopOwner messages:   get_stats, shutdown
 //
 // select is used in both the main loop and the sleep loop to wait on BOTH
 // channels simultaneously, so control messages are never missed.
@@ -429,6 +434,6 @@ func printReport(barberStats, wrStats Message) {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano()) //nolint:staticcheck — pre-1.20 compat
+	rand.Seed(time.Now().UnixNano())
 	runShopOwner()
 }
